@@ -1,0 +1,36 @@
+name: Build WASM Contract
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust and wasm-pack
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-pack
+
+      - name: Compile WASM
+        run: |
+          cd wasm_source  # Navigate to wasm_source where Cargo.toml lives
+          wasm-pack build --target web
+          mv pkg/track_green_asset.wasm ../  # Move WASM to root
+
+      - name: Upload WASM Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: track_green_asset
+          path: track_green_asset.wasm  # Updated to root path after move
