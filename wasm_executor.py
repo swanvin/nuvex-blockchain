@@ -11,26 +11,29 @@ def execute_wasm_contract(tx: Dict) -> str:
     module = Module.from_file(engine, wasm_file)
     linker = Linker(engine)
 
-    # Define __wbindgen_string_new (simulate string allocation)
-    memory = None  # Will be set after instantiation
-    def string_new(ptr: int, len: int) -> int:
-        nonlocal memory
-        # Simulate allocation—return a dummy pointer (e.g., 0 for now)
-        return 0  # Improve this later with real memory access
-    
-    linker.define(store, "wbg", "__wbindgen_string_new", Func(store, FuncType([ValType.i32(), ValType.i32()], [ValType.i32()]), string_new))
+    # Define __wbindgen_string_new (back to externref)
+    linker.define(
+        store,
+        "wbg",
+        "__wbindgen_string_new",
+        Func(
+            store,
+            FuncType([ValType.i32(), ValType.i32()], [ValType.externref()]),
+            lambda x, y: None  # Dummy: null externref
+        )
+    )
     linker.define(store, "wbg", "__wbindgen_throw", Func(store, FuncType([ValType.i32(), ValType.i32()], []), lambda x, y: None))
     linker.define(store, "wbg", "__wbg_now_807e54c39636c349", Func(store, FuncType([], [ValType.f64()]), lambda: float(os.time.time())))
     linker.define(store, "wbg", "__wbindgen_init_externref_table", Func(store, FuncType([], []), lambda: None))
 
     instance = linker.instantiate(store, module)
     exports = instance.exports(store)
-    memory = exports.get("memory")  # Get memory export for string handling
     
     export_names = list(exports.keys())
     print("Available exports:", export_names)
     
     track_green_asset_func = exports.get("track_green_asset")
+    print(f"Fetched 'track_green_asset': {track_green_asset_func}")
     if track_green_asset_func is None:
         return f"Export 'track_green_asset' not found. Available: {export_names}"
     
@@ -39,5 +42,6 @@ def execute_wasm_contract(tx: Dict) -> str:
     amount = tx.get("yield_amount", 100) or 100
     shard_id = tx.get("shard_id", 0)
     token = tx.get("token", "GRN")
+    print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
     result = track_green_asset_func(store, sender, asset_type, amount, shard_id, token)
     return result.decode("utf-8")
