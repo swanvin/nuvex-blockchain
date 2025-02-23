@@ -40,16 +40,16 @@ def execute_wasm_contract(tx: Dict) -> str:
 
     # Allocate and write strings to WASM memory
     sender_bytes = sender.encode("utf-8")
-    sender_ptr = malloc(store, len(sender_bytes), 4)  # size, alignment
-    memory.write(store, sender_ptr, sender_bytes)
+    sender_ptr = malloc(store, len(sender_bytes), 4)
+    memory.data(store)[sender_ptr:sender_ptr + len(sender_bytes)] = sender_bytes
 
     asset_type_bytes = asset_type.encode("utf-8")
     asset_type_ptr = malloc(store, len(asset_type_bytes), 4)
-    memory.write(store, asset_type_ptr, asset_type_bytes)
+    memory.data(store)[asset_type_ptr:asset_type_ptr + len(asset_type_bytes)] = asset_type_bytes
 
     token_bytes = token.encode("utf-8")
     token_ptr = malloc(store, len(token_bytes), 4)
-    memory.write(store, token_ptr, token_bytes)
+    memory.data(store)[token_ptr:token_ptr + len(token_bytes)] = token_bytes
 
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
     result = track_green_asset_func(
