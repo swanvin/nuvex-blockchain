@@ -43,17 +43,21 @@ def execute_wasm_contract(tx: Dict) -> str:
     sender_bytes = sender.encode("utf-8")
     sender_ptr = malloc(store, len(sender_bytes), 4)
     sender_buffer = create_string_buffer(sender_bytes)
-    memmove(cast(memory.data_ptr(store), POINTER(c_ubyte)) + sender_ptr, addressof(sender_buffer), len(sender_bytes))
+    base_ptr = cast(memory.data_ptr(store), POINTER(c_ubyte))
+    dest_ptr = cast(base_ptr.value + sender_ptr, POINTER(c_ubyte))
+    memmove(dest_ptr, addressof(sender_buffer), len(sender_bytes))
 
     asset_type_bytes = asset_type.encode("utf-8")
     asset_type_ptr = malloc(store, len(asset_type_bytes), 4)
     asset_type_buffer = create_string_buffer(asset_type_bytes)
-    memmove(cast(memory.data_ptr(store), POINTER(c_ubyte)) + asset_type_ptr, addressof(asset_type_buffer), len(asset_type_bytes))
+    dest_ptr = cast(base_ptr.value + asset_type_ptr, POINTER(c_ubyte))
+    memmove(dest_ptr, addressof(asset_type_buffer), len(asset_type_bytes))
 
     token_bytes = token.encode("utf-8")
     token_ptr = malloc(store, len(token_bytes), 4)
     token_buffer = create_string_buffer(token_bytes)
-    memmove(cast(memory.data_ptr(store), POINTER(c_ubyte)) + token_ptr, addressof(token_buffer), len(token_bytes))
+    dest_ptr = cast(base_ptr.value + token_ptr, POINTER(c_ubyte))
+    memmove(dest_ptr, addressof(token_buffer), len(token_bytes))
 
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
     result = track_green_asset_func(
