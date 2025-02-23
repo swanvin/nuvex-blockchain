@@ -1,6 +1,7 @@
 from wasmtime import Store, Module, Instance, Linker, Engine, Func, FuncType, ValType
 import os
 from typing import Dict
+from ctypes import create_string_buffer, addressof
 
 def execute_wasm_contract(tx: Dict) -> str:
     wasm_file = "nuvex_wasm_bg.wasm"
@@ -41,15 +42,18 @@ def execute_wasm_contract(tx: Dict) -> str:
     # Allocate and write strings to WASM memory
     sender_bytes = sender.encode("utf-8")
     sender_ptr = malloc(store, len(sender_bytes), 4)
-    memory.data(store)[sender_ptr:sender_ptr + len(sender_bytes)] = sender_bytes
+    sender_buffer = create_string_buffer(sender_bytes)
+    memory.data_ptr(store)[sender_ptr:sender_ptr + len(sender_bytes)] = sender_buffer.raw
 
     asset_type_bytes = asset_type.encode("utf-8")
     asset_type_ptr = malloc(store, len(asset_type_bytes), 4)
-    memory.data(store)[asset_type_ptr:asset_type_ptr + len(asset_type_bytes)] = asset_type_bytes
+    asset_type_buffer = create_string_buffer(asset_type_bytes)
+    memory.data_ptr(store)[asset_type_ptr:asset_type_ptr + len(asset_type_bytes)] = asset_type_buffer.raw
 
     token_bytes = token.encode("utf-8")
     token_ptr = malloc(store, len(token_bytes), 4)
-    memory.data(store)[token_ptr:token_ptr + len(token_bytes)] = token_bytes
+    token_buffer = create_string_buffer(token_bytes)
+    memory.data_ptr(store)[token_ptr:token_ptr + len(token_bytes)] = token_buffer.raw
 
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
     result = track_green_asset_func(
