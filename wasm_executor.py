@@ -1,7 +1,7 @@
 from wasmtime import Store, Module, Instance, Linker, Engine, Func, FuncType, ValType
 import os
 from typing import Dict
-from ctypes import create_string_buffer, memmove, addressof
+from ctypes import create_string_buffer, memmove, c_ubyte, POINTER, cast
 
 def execute_wasm_contract(tx: Dict) -> str:
     wasm_file = "nuvex_wasm_bg.wasm"
@@ -43,17 +43,17 @@ def execute_wasm_contract(tx: Dict) -> str:
     sender_bytes = sender.encode("utf-8")
     sender_ptr = malloc(store, len(sender_bytes), 4)
     sender_buffer = create_string_buffer(sender_bytes)
-    memmove(memory.data_ptr(store) + sender_ptr, addressof(sender_buffer), len(sender_bytes))
+    memmove(cast(memory.data_ptr(store), POINTER(c_ubyte)) + sender_ptr, addressof(sender_buffer), len(sender_bytes))
 
     asset_type_bytes = asset_type.encode("utf-8")
     asset_type_ptr = malloc(store, len(asset_type_bytes), 4)
     asset_type_buffer = create_string_buffer(asset_type_bytes)
-    memmove(memory.data_ptr(store) + asset_type_ptr, addressof(asset_type_buffer), len(asset_type_bytes))
+    memmove(cast(memory.data_ptr(store), POINTER(c_ubyte)) + asset_type_ptr, addressof(asset_type_buffer), len(asset_type_bytes))
 
     token_bytes = token.encode("utf-8")
     token_ptr = malloc(store, len(token_bytes), 4)
     token_buffer = create_string_buffer(token_bytes)
-    memmove(memory.data_ptr(store) + token_ptr, addressof(token_buffer), len(token_bytes))
+    memmove(cast(memory.data_ptr(store), POINTER(c_ubyte)) + token_ptr, addressof(token_buffer), len(token_bytes))
 
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
     result = track_green_asset_func(
