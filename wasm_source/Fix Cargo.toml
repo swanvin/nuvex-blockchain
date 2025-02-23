@@ -1,7 +1,3 @@
-- **Save As**: `README.md`
-
-#### 11. `wasm_source/Cargo.toml`
-```toml
 [package]
 name = "nuvex-wasm"
 version = "0.1.0"
