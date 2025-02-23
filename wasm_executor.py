@@ -3,7 +3,7 @@ from wasmer import Store, Module, Instance
 import os
 
 def execute_wasm_contract(tx: Dict) -> str:
-    wasm_file = "track_green_asset.wasm"
+    wasm_file = "nuvex_wasm_bg.wasm"  # Updated name
     if not os.path.exists(wasm_file):
         return "WASM file not found (compile from Rust first)"
     store = Store()
