@@ -10,32 +10,44 @@ def execute_wasm_contract(tx: Dict) -> str:
     store = Store(engine)
     module = Module.from_file(engine, wasm_file)
     linker = Linker(engine)
-    
-    # Define a dummy __wbindgen_string_new (returns a simple pointer-like value)
+
+    # Define __wbindgen_string_new (correct namespace: 'wbg')
     linker.define(
-        store, 
-        "wbindgen", 
-        "__wbindgen_string_new", 
+        store,
+        "wbg",
+        "__wbindgen_string_new",
         Func(
-            store, 
-            FuncType([ValType.i32(), ValType.i32()], [ValType.i32()]), 
-            lambda x, y: 42  # Dummy implementation returning 42
+            store,
+            FuncType([ValType.i32(), ValType.i32()], [ValType.i32()]),
+            lambda x, y: 42  # Dummy: returns a pointer-like value
         )
     )
-    
-    # Define __wbindgen_throw (simple no-op for now)
+
+    # Define __wbindgen_throw (correct namespace: 'wbg')
     linker.define(
-        store, 
-        "wbindgen", 
-        "__wbindgen_throw", 
+        store,
+        "wbg",
+        "__wbindgen_throw",
         Func(
-            store, 
+            store,
             FuncType([ValType.i32(), ValType.i32()], []),
-            lambda x, y: None  # No-op
+            lambda x, y: None  # Dummy: no-op
         )
     )
-    
-    instance = linker.instantiate(store, module)  # Use linker to instantiate
+
+    # Define __wbg_now_* (seen in wasm dump, might be needed)
+    linker.define(
+        store,
+        "wbg",
+        "__wbg_now_807e54c39636c349",
+        Func(
+            store,
+            FuncType([], [ValType.f64()]),  # Returns current time as f64
+            lambda: float(os.time.time())  # Rough approximation
+        )
+    )
+
+    instance = linker.instantiate(store, module)
     sender = tx.get("sender", "user1")
     asset_type = tx.get("sector", "cannabis")
     amount = tx.get("yield_amount", 100) or 100
