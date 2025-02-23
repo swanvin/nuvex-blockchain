@@ -63,17 +63,18 @@ def execute_wasm_contract(tx: Dict) -> str:
     exports = instance.exports(store)
     
     # Debug: Print available exports
-    print("Available exports:", [key for key in exports.__dict__.keys() if not key.startswith('_')])
+    export_names = [key for key in exports.__dict__.keys() if not key.startswith('_')]
+    print("Available exports:", export_names)
     
-    # Try calling track_green_asset (might be mangled or wrapped)
+    # Try calling track_green_asset
     track_green_asset_func = exports.get("track_green_asset")
     if not track_green_asset_func:
-        return "Export 'track_green_asset' not found in WASM module"  # Fixed string
+        return f"Export 'track_green_asset' not found. Available: {export_names}"  # Return string, don’t call it
     
     sender = tx.get("sender", "user1")
     asset_type = tx.get("sector", "cannabis")
     amount = tx.get("yield_amount", 100) or 100
     shard_id = tx.get("shard_id", 0)
     token = tx.get("token", "GRN")
-    result = track_green_asset_func(sender, asset_type, amount, shard_id, token)
+    result = track_green_asset_func(store, sender, asset_type, amount, shard_id, token)  # Pass store to func
     return result.decode("utf-8")
