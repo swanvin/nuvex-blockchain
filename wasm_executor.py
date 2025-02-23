@@ -43,21 +43,18 @@ def execute_wasm_contract(tx: Dict) -> str:
     sender_bytes = sender.encode("utf-8")
     sender_ptr = malloc(store, len(sender_bytes), 4)
     sender_buffer = create_string_buffer(sender_bytes)
-    base_ptr = memory.data_ptr(store)  # Raw pointer
-    dest_addr = c_void_p(base_ptr._address + sender_ptr)  # Use _address for raw int
-    memmove(dest_addr, sender_buffer, len(sender_bytes))
+    base_addr = int(c_void_p.from_buffer(memory.data_ptr(store)).value)  # Get raw address
+    memmove(base_addr + sender_ptr, sender_buffer, len(sender_bytes))
 
     asset_type_bytes = asset_type.encode("utf-8")
     asset_type_ptr = malloc(store, len(asset_type_bytes), 4)
     asset_type_buffer = create_string_buffer(asset_type_bytes)
-    dest_addr = c_void_p(base_ptr._address + asset_type_ptr)
-    memmove(dest_addr, asset_type_buffer, len(asset_type_bytes))
+    memmove(base_addr + asset_type_ptr, asset_type_buffer, len(asset_type_bytes))
 
     token_bytes = token.encode("utf-8")
     token_ptr = malloc(store, len(token_bytes), 4)
     token_buffer = create_string_buffer(token_bytes)
-    dest_addr = c_void_p(base_ptr._address + token_ptr)
-    memmove(dest_addr, token_buffer, len(token_bytes))
+    memmove(base_addr + token_ptr, token_buffer, len(token_bytes))
 
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
     result = track_green_asset_func(
