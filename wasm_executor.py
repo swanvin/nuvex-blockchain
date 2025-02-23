@@ -11,7 +11,7 @@ def execute_wasm_contract(tx: Dict) -> str:
     module = Module.from_file(engine, wasm_file)
     linker = Linker(engine)
 
-    # Define __wbindgen_string_new (correct namespace: 'wbg')
+    # Define __wbindgen_string_new (wbg namespace)
     linker.define(
         store,
         "wbg",
@@ -23,7 +23,7 @@ def execute_wasm_contract(tx: Dict) -> str:
         )
     )
 
-    # Define __wbindgen_throw (correct namespace: 'wbg')
+    # Define __wbindgen_throw (wbg namespace)
     linker.define(
         store,
         "wbg",
@@ -35,7 +35,7 @@ def execute_wasm_contract(tx: Dict) -> str:
         )
     )
 
-    # Define __wbg_now_* (seen in wasm dump, might be needed)
+    # Define __wbg_now_807e54c39636c349 (wbg namespace)
     linker.define(
         store,
         "wbg",
@@ -44,6 +44,18 @@ def execute_wasm_contract(tx: Dict) -> str:
             store,
             FuncType([], [ValType.f64()]),  # Returns current time as f64
             lambda: float(os.time.time())  # Rough approximation
+        )
+    )
+
+    # Define __wbindgen_init_externref_table (wbg namespace)
+    linker.define(
+        store,
+        "wbg",
+        "__wbindgen_init_externref_table",
+        Func(
+            store,
+            FuncType([], []),  # No args, no return
+            lambda: None  # Dummy: no-op
         )
     )
 
