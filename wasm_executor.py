@@ -66,8 +66,8 @@ def execute_wasm_contract(tx: Dict) -> str:
     export_names = [key for key in exports.__dict__.keys() if not key.startswith('_')]
     print("Available exports:", export_names)
     
-    # Try calling track_green_asset
-    track_green_asset_func = exports.get("track_green_asset")
+    # Try possible export names
+    track_green_asset_func = exports.get("track_green_asset") or exports.get("__wasm_export_track_green_asset")
     if not track_green_asset_func:
         return f"Export 'track_green_asset' not found. Available: {export_names}"  # Exit here
     
