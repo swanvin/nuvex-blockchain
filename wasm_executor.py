@@ -1,15 +1,14 @@
 import wasmer
-from wasmer import Store, Module, Instance
+from wasmer import Store, Instance
 import os
 from typing import Dict
 
 def execute_wasm_contract(tx: Dict) -> str:
-    wasm_file = "nuvex_wasm_bg.wasm.compiled"
+    wasm_file = "nuvex_wasm_bg.wasm"  # Use raw wasm-pack output
     if not os.path.exists(wasm_file):
-        return "Precompiled WASM file not found (run precompile_wasm.py first)"
+        return "WASM file not found (compile with wasm-pack first)"
     store = Store()
-    module = Module.deserialize_from_file(store, wasm_file)
-    instance = Instance(module)
+    instance = Instance.from_file(store, wasm_file)  # Load directly, no compilation
     sender = tx.get("sender", "user1")
     asset_type = tx.get("sector", "cannabis")
     amount = tx.get("yield_amount", 100) or 100
