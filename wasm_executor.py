@@ -67,7 +67,9 @@ def execute_wasm_contract(tx: Dict) -> str:
     print("Available exports:", export_names)
     
     # Try possible export names
-    track_green_asset_func = exports.get("track_green_asset") or exports.get("__wasm_export_track_green_asset")
+    track_green_asset_func = exports.get("track_green_asset")
+    if not track_green_asset_func:
+        track_green_asset_func = exports.get("__wasm_export_track_green_asset")
     if not track_green_asset_func:
         return f"Export 'track_green_asset' not found. Available: {export_names}"  # Exit here
     
