@@ -1,5 +1,6 @@
 from wasmtime import Store, Module, Instance, Linker, Engine, Func, FuncType, ValType
 import os
+import time  # Added import
 from typing import Dict
 from ctypes import create_string_buffer, memmove, c_void_p
 
@@ -14,7 +15,7 @@ def execute_wasm_contract(tx: Dict) -> str:
 
     linker.define(store, "wbg", "__wbindgen_string_new", Func(store, FuncType([ValType.i32(), ValType.i32()], [ValType.externref()]), lambda x, y: None))
     linker.define(store, "wbg", "__wbindgen_throw", Func(store, FuncType([ValType.i32(), ValType.i32()], []), lambda x, y: None))
-    linker.define(store, "wbg", "__wbg_now_807e54c39636c349", Func(store, FuncType([], [ValType.f64()]), lambda: float(os.time.time())))
+    linker.define(store, "wbg", "__wbg_now_807e54c39636c349", Func(store, FuncType([], [ValType.f64()]), lambda: float(time.time())))  # Fixed time stub
     linker.define(store, "wbg", "__wbindgen_init_externref_table", Func(store, FuncType([], []), lambda: None))
 
     instance = linker.instantiate(store, module)
@@ -43,7 +44,7 @@ def execute_wasm_contract(tx: Dict) -> str:
     sender_bytes = sender.encode("utf-8")
     sender_ptr = malloc(store, len(sender_bytes), 4)
     sender_buffer = create_string_buffer(sender_bytes)
-    base_addr = int(c_void_p.from_buffer(memory.data_ptr(store)).value)  # Get raw address
+    base_addr = int(c_void_p.from_buffer(memory.data_ptr(store)).value)
     memmove(base_addr + sender_ptr, sender_buffer, len(sender_bytes))
 
     asset_type_bytes = asset_type.encode("utf-8")
