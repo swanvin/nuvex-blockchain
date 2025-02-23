@@ -33,12 +33,13 @@ def execute_wasm_contract(tx: Dict) -> str:
     shard_id = tx.get("shard_id", 0)
     token = tx.get("token", "GRN")
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
-    # 8 params: ptr/len for each string, direct i32 for amount/shard_id
+    # 8 params with store as first arg
     result = track_green_asset_func(
-        0, len(sender),      # sender_ptr, sender_len (dummy ptr=0)
+        store,           # Store context
+        0, len(sender),  # sender_ptr, sender_len
         0, len(asset_type),  # asset_type_ptr, asset_type_len
-        amount,              # amount
-        shard_id,            # shard_id
-        0, len(token)        # token_ptr, token_len
+        amount,          # amount
+        shard_id,        # shard_id
+        0, len(token)    # token_ptr, token_len
     )
     return result.decode("utf-8")
