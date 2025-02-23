@@ -11,15 +11,15 @@ def execute_wasm_contract(tx: Dict) -> str:
     module = Module.from_file(engine, wasm_file)
     linker = Linker(engine)
 
-    # Define __wbindgen_string_new (wbg namespace)
+    # Define __wbindgen_string_new (wbg namespace, returns externref)
     linker.define(
         store,
         "wbg",
         "__wbindgen_string_new",
         Func(
             store,
-            FuncType([ValType.i32(), ValType.i32()], [ValType.i32()]),
-            lambda x, y: 42  # Dummy: returns a pointer-like value
+            FuncType([ValType.i32(), ValType.i32()], [ValType.externref()]),
+            lambda x, y: None  # Dummy: returns None (null externref)
         )
     )
 
