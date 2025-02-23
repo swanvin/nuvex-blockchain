@@ -27,19 +27,37 @@ def execute_wasm_contract(tx: Dict) -> str:
     if track_green_asset_func is None:
         return f"Export 'track_green_asset' not found. Available: {export_names}"
     
+    malloc = exports.get("__wbindgen_malloc")
+    memory = exports.get("memory")
+    if malloc is None or memory is None:
+        return "Missing malloc or memory exports"
+
     sender = tx.get("sender", "user1")
     asset_type = tx.get("sector", "cannabis")
     amount = tx.get("yield_amount", 100) or 100
     shard_id = tx.get("shard_id", 0)
     token = tx.get("token", "GRN")
+
+    # Allocate and write strings to WASM memory
+    sender_bytes = sender.encode("utf-8")
+    sender_ptr = malloc(store, len(sender_bytes))
+    memory.write(store, sender_ptr, sender_bytes)
+
+    asset_type_bytes = asset_type.encode("utf-8")
+    asset_type_ptr = malloc(store, len(asset_type_bytes))
+    memory.write(store, asset_type_ptr, asset_type_bytes)
+
+    token_bytes = token.encode("utf-8")
+    token_ptr = malloc(store, len(token_bytes))
+    memory.write(store, token_ptr, token_bytes)
+
     print("Calling track_green_asset with args:", sender, asset_type, amount, shard_id, token)
-    # 8 params with store as first arg
     result = track_green_asset_func(
-        store,           # Store context
-        0, len(sender),  # sender_ptr, sender_len
-        0, len(asset_type),  # asset_type_ptr, asset_type_len
-        amount,          # amount
-        shard_id,        # shard_id
-        0, len(token)    # token_ptr, token_len
+        store,
+        sender_ptr, len(sender_bytes),
+        asset_type_ptr, len(asset_type_bytes),
+        amount,
+        shard_id,
+        token_ptr, len(token_bytes)
     )
     return result.decode("utf-8")
