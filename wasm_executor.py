@@ -11,17 +11,7 @@ def execute_wasm_contract(tx: Dict) -> str:
     module = Module.from_file(engine, wasm_file)
     linker = Linker(engine)
 
-    # Define __wbindgen_string_new (back to externref)
-    linker.define(
-        store,
-        "wbg",
-        "__wbindgen_string_new",
-        Func(
-            store,
-            FuncType([ValType.i32(), ValType.i32()], [ValType.externref()]),
-            lambda x, y: None  # Dummy: null externref
-        )
-    )
+    linker.define(store, "wbg", "__wbindgen_string_new", Func(store, FuncType([ValType.i32(), ValType.i32()], [ValType.externref()]), lambda x, y: None))
     linker.define(store, "wbg", "__wbindgen_throw", Func(store, FuncType([ValType.i32(), ValType.i32()], []), lambda x, y: None))
     linker.define(store, "wbg", "__wbg_now_807e54c39636c349", Func(store, FuncType([], [ValType.f64()]), lambda: float(os.time.time())))
     linker.define(store, "wbg", "__wbindgen_init_externref_table", Func(store, FuncType([], []), lambda: None))
@@ -29,9 +19,11 @@ def execute_wasm_contract(tx: Dict) -> str:
     instance = linker.instantiate(store, module)
     exports = instance.exports(store)
     
+    # Debug: List exports using keys()
     export_names = list(exports.keys())
     print("Available exports:", export_names)
     
+    # Fetch track_green_asset
     track_green_asset_func = exports.get("track_green_asset")
     print(f"Fetched 'track_green_asset': {track_green_asset_func}")
     if track_green_asset_func is None:
