@@ -68,4 +68,12 @@ def execute_wasm_contract(tx: Dict) -> str:
     # Try calling track_green_asset (might be mangled or wrapped)
     track_green_asset_func = exports.get("track_green_asset")
     if not track_green_asset_func:
-        return "Export 'track_green_asset
+        return "Export 'track_green_asset' not found in WASM module"  # Fixed string
+    
+    sender = tx.get("sender", "user1")
+    asset_type = tx.get("sector", "cannabis")
+    amount = tx.get("yield_amount", 100) or 100
+    shard_id = tx.get("shard_id", 0)
+    token = tx.get("token", "GRN")
+    result = track_green_asset_func(sender, asset_type, amount, shard_id, token)
+    return result.decode("utf-8")
