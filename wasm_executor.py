@@ -70,8 +70,8 @@ def execute_wasm_contract(tx: Dict) -> str:
     track_green_asset_func = exports.get("track_green_asset")
     if not track_green_asset_func:
         track_green_asset_func = exports.get("__wasm_export_track_green_asset")
-    if not track_green_asset_func:
-        return f"Export 'track_green_asset' not found. Available: {export_names}"  # Exit here
+        if not track_green_asset_func:
+            return f"Export 'track_green_asset' not found. Available: {export_names}"  # Exit here
     
     sender = tx.get("sender", "user1")
     asset_type = tx.get("sector", "cannabis")
