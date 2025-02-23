@@ -4,13 +4,11 @@ import os
 from typing import Dict
 
 def execute_wasm_contract(tx: Dict) -> str:
-    wasm_file = "nuvex_wasm_bg.wasm"
+    wasm_file = "nuvex_wasm_bg.wasm.compiled"
     if not os.path.exists(wasm_file):
-        return "WASM file not found (compile from Rust first)"
-    # Load WASM bytes directly into Instance (no runtime compilation)
-    wasm_bytes = open(wasm_file, "rb").read()
+        return "Precompiled WASM file not found (run precompile_wasm.py first)"
     store = Store()
-    module = Module(store, wasm_bytes)  # Still compiles, but should work with pre-built wasm-pack output
+    module = Module.deserialize_from_file(store, wasm_file)
     instance = Instance(module)
     sender = tx.get("sender", "user1")
     asset_type = tx.get("sector", "cannabis")
