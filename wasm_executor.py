@@ -1,9 +1,10 @@
 import wasmer
 from wasmer import Store, Module, Instance
 import os
+from typing import Dict  # Add this
 
 def execute_wasm_contract(tx: Dict) -> str:
-    wasm_file = "nuvex_wasm_bg.wasm"  # Updated name
+    wasm_file = "nuvex_wasm_bg.wasm"
     if not os.path.exists(wasm_file):
         return "WASM file not found (compile from Rust first)"
     store = Store()
