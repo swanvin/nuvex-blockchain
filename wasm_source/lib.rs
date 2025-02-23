@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use js_sys::Date;  // Add this for Date::now()
 use serde::{Serialize, Deserialize};
 use sha2::{Sha256, Digest};
 
@@ -33,10 +34,11 @@ pub fn track_green_asset(sender: String, asset_type: String, amount: u64, shard_
         amount,
         sender,
         shard_id,
-        timestamp: js_sys::Date::now() as u64,
+        timestamp: Date::now() as u64,  // Simplified js_sys::Date::now()
         tx_hash,
     };
-    serde_json::to_string(&asset)
-        .map(JsValue::from_str)
-        .unwrap_or(JsValue::from_str("Error: Serialization failed"))
+    match serde_json::to_string(&asset) {
+        Ok(json) => JsValue::from_str(&json),  // Convert String to &str
+        Err(_) => JsValue::from_str("Error: Serialization failed"),
+    }
 }
